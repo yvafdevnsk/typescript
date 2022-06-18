@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <script src="array-to-map.js"></script>
+        <style>
+            body, input, button {
+                font-size: 24pt;
+            }
+            input {
+                width: 100px;
+            }
+        </style>
+        <title>TypeScript: 配列からマップを作成する</title>
+    </head>
+    <body>
+        <label for="listIndex">0から3まで選択する</label>
+        <input id="listIndex" type="number" min="0" max="3" value="0">
+        <button onClick="array2map();">押す</button>
+        <p id="debug"></p>
+    </body>
+</html>
