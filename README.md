@@ -1,4 +1,4 @@
-# TypeScript sample code.
+# TypeScript サンプルコード
 
 ## array-to-map
 配列からマップを作成する。
