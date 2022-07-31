@@ -44,6 +44,12 @@ function init() {
 /**
  * HTMLElement: beforeinput event
  *
+ * *直接入力
+ * *貼り付け
+ * *ドラッグアンドドロップ
+ * サロゲートペア "𠮟" \u{20B9F}
+ * IME
+ *
  * @param e InputEvent
  */
 function beforeinputEventListener(e) {
@@ -53,13 +59,19 @@ function beforeinputEventListener(e) {
         textLog(`beforeinput 既存の入力値 e.target.value[${e.target.value}]`);
     }
     if ((e.data !== null) && (e.data.length > 0)) {
-        const allow = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
-        if (allow.indexOf(e.data) === -1) {
-            textLog("beforeinput 入力値あり cancel");
-            e.preventDefault();
+        textLog("beforeinput 入力値.length=" + e.data.length);
+        textLog("beforeinput Array.from(入力値).length=" + Array.from(e.data).length);
+        const allow = new Map([
+            ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"],
+            ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["0", "0"],
+            ["\u{20B9F}", "\u{20B9F}"]
+        ]);
+        if (Array.from(e.data).every((s) => allow.has(s))) {
+            textLog("beforeinput 入力値あり 全要素 ok");
         }
         else {
-            textLog("beforeinput 入力値あり ok");
+            textLog("beforeinput 入力値あり cancel");
+            e.preventDefault();
         }
     }
     else {
