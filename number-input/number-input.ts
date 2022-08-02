@@ -4,6 +4,15 @@ const load: any = () => {
 window.onload = load;
 
 /**
+ * 入力可能とする文字の集合。
+ */
+const allowMap: Map<string, string> = new Map([
+    ["1","1"],["2","2"],["3","3"],["4","4"],["5","5"],
+    ["6","6"],["7","7"],["8","8"],["9","9"],["0","0"],
+    ["\u{20B9F}","\u{20B9F}"] //サロゲートペア "𠮟"
+]);
+
+/**
  * テキストエリアのログをクリアする。
  */
 function clearLog(): void {
@@ -56,7 +65,7 @@ function init(): void {
  * ＊貼り付け
  * ＊ドラッグアンドドロップ
  * ＊サロゲートペア "𠮟" \u{20B9F}
- * IME
+ * ＊IME
  * 
  * @param e InputEvent
  */
@@ -77,13 +86,13 @@ function beforeinputEventListener(e: InputEvent): void {
         textLog("beforeinput 入力値.length=" + e.data.length);
         textLog("beforeinput Array.from(入力値).length=" + Array.from(e.data).length);
 
-        const allow: Map<string, string> = new Map([
-            ["1","1"],["2","2"],["3","3"],["4","4"],["5","5"],
-            ["6","6"],["7","7"],["8","8"],["9","9"],["0","0"],
-            ["\u{20B9F}","\u{20B9F}"] //サロゲートペア "𠮟"
-        ]);
-        if (Array.from(e.data).every((s) => allow.has(s))) {
-            textLog("beforeinput 入力値あり 全要素 ok");
+        const dataList: string[] = Array.from(e.data);
+        if (dataList.every((s) => allowMap.has(s))) {
+            textLog("beforeinput 入力値あり 全文字 ok");
+        }
+        else if (dataList.some((s) => allowMap.has(s))) {
+            textLog("beforeinput 入力値あり 何れかの文字 ok");
+            // inputイベントでNGの文字を取り除く。
         }
         else {
             textLog("beforeinput 入力値あり cancel");
@@ -114,28 +123,27 @@ function inputEventListener(e: InputEvent | Event): void {
             textLog("input 入力値.length=" + e.data.length);
             textLog("input Array.from(入力値).length=" + Array.from(e.data).length);
     
-            const allow: Map<string, string> = new Map([
-                ["1","1"],["2","2"],["3","3"],["4","4"],["5","5"],
-                ["6","6"],["7","7"],["8","8"],["9","9"],["0","0"],
-                ["\u{20B9F}","\u{20B9F}"] //サロゲートペア "𠮟"
-            ]);
-            if (Array.from(e.data).every((s) => allow.has(s))) {
-                textLog("input 入力値あり 全要素 ok");
+            const dataList: string[] = Array.from(e.data);
+            if (dataList.every((s) => allowMap.has(s))) {
+                textLog("input 入力値あり 全文字 ok");
             }
             else {
-                textLog("input 入力値あり cancel");
+                textLog("input 入力値あり 何れかの文字 cancel");
 
-                // IMEで入力された場合はcompositionendイベントの後にinputイベントが呼ばれる。
-                // beforeinputイベントの呼び出しはcomposing中になるのでスキップされる。
-                // IMEで入力された場合はinputイベントでも入力不可の文字列を取り除く。
+                // inputイベントはキャンセルできないので
+                // テキストインプットの内容から入力不可の文字を取り除く。
+
+                // IMEで入力された場合はcompositionendイベントの後にe.isComposing=falseとなってinputイベントが呼ばれる。
+                // IMEで入力された場合はbeforeinputイベントの処理はe.isComposing=trueになるのでスキップされる。
+                // IMEで入力された場合はinputイベントで入力不可の文字を取り除く。
                 const inputElement: HTMLInputElement = e.target as HTMLInputElement;
                 inputElement.value = Array.from(inputElement.value)
-                .filter((s) => allow.has(s))
-                .reduce((previousValue, currentValue) => previousValue + currentValue, "");
+                    .filter((s) => allowMap.has(s))
+                    .reduce((previousValue, currentValue) => previousValue + currentValue, "");
             }
         }
         else {
-            textLog("beforeinput 入力値なし");
+            textLog("input 入力値なし");
         }
     }
     else {
