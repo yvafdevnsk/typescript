@@ -1,0 +1,19 @@
+body, label, input, button {
+    font-size: 24pt;
+}
+textarea {
+    font-size: 14pt;
+}
+
+input {
+    width: 600px;
+}
+
+div {
+    margin-top: 24px;
+}
+
+textarea {
+    width: 1200px;
+    height: 600px;
+}
