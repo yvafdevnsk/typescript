@@ -81,11 +81,11 @@ function beforeinputEventListener(e) {
             textLog("beforeinput 入力値あり 全文字 ok");
         }
         else if (dataList.some((s) => allowMap.has(s))) {
-            textLog("beforeinput 入力値あり 何れかの文字 ok");
+            textLog("beforeinput 入力値あり 何れかの文字 ng");
             // inputイベントでNGの文字を取り除く。
         }
         else {
-            textLog("beforeinput 入力値あり cancel");
+            textLog("beforeinput 入力値あり 全文字 ng");
             e.preventDefault();
         }
     }
@@ -114,7 +114,7 @@ function inputEventListener(e) {
                 textLog("input 入力値あり 全文字 ok");
             }
             else {
-                textLog("input 入力値あり 何れかの文字 cancel");
+                textLog("input 入力値あり 何れかの文字 ng");
                 // inputイベントはキャンセルできないので
                 // テキストインプットの内容から入力不可の文字を取り除く。
                 // IMEで入力された場合はcompositionendイベントの後にe.isComposing=falseとなってinputイベントが呼ばれる。
