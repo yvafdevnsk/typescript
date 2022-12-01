@@ -70,6 +70,8 @@ function init(): void {
         numberInput.addEventListener("compositionstart", compositionStartEventListener);
         numberInput.addEventListener("compositionupdate", compositionUpdateEventListener);
         numberInput.addEventListener("compositionend", compositionEndEventListener);
+        numberInput.addEventListener("paste", pasteEventListener);
+        numberInput.addEventListener("drop", dropEventListener);
     }
 
     const button: HTMLElement | null = document.getElementById("clear");
@@ -82,10 +84,10 @@ function init(): void {
  * HTMLElement: beforeinput event
  * 
  * ＊直接入力
- * ＊貼り付け
- * ＊ドラッグアンドドロップ
+ * ＊貼り付け (選択範囲有無)
+ * ＊ドラッグアンドドロップ (選択範囲有無)
  * ＊サロゲートペア "𠮟" \u{20B9F}
- * ＊IME
+ * ＊IME入力
  * 
  * @param e InputEvent
  */
@@ -227,6 +229,145 @@ function compositionEndEventListener(e: CompositionEvent): void {
             inputElement.value = Array.from(inputElement.value)
                 .filter((s) => allowMap.has(s))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, "");
+        }
+    }
+}
+
+/**
+ * HTMLElement: paste event
+ * 
+ * @param e ClipboardEvent
+ */
+function pasteEventListener(e: ClipboardEvent): void {
+    console.log("paste ClipboardEvent", e);
+    textLog("paste Event", e);
+
+    // paste > beforeinput > inputの順でイベントが発行される。
+    // このときinputイベントのInputEvent.data(string)はnullになっている。
+    // デフォルトの動作をキャンセルするとpasteイベントのみになる。
+    e.preventDefault();
+
+    // 貼り付けるデータを取得する。
+    const pasteData: string | undefined = e.clipboardData?.getData("text");
+    if (pasteData) {
+        textLog(`paste pasteData[${pasteData}]`, e);
+
+        // 貼り付けるデータから入力不可の文字を取り除く。
+        const pasteDataAllowed: string = Array.from(pasteData)
+            .filter((s) => allowMap.has(s))
+            .reduce((previousValue, currentValue) => previousValue + currentValue, "");
+        textLog(`paste pasteDataAllowed[${pasteDataAllowed}]`, e);
+        if (pasteDataAllowed.length === 0) {
+            return;
+        }
+
+        // テキストインプットのキャレットの位置に挿入する。
+        //
+        // selectionStart, selectionEndの型はnumber | nullとなっている。
+        // if(selectionStart)では0の場合にfalseになるのでnullと比較している。
+        //
+        // Falsy | MDN
+        // https://developer.mozilla.org/en-US/docs/Glossary/Falsy
+        const inputElement: HTMLInputElement = e.target as HTMLInputElement;
+        textLog(`paste selectionStart[${inputElement.selectionStart}]selectionEnd[${inputElement.selectionEnd}]`, e);
+        if ((inputElement.selectionStart !== null) && (inputElement.selectionEnd !== null)) {
+            // 貼り付ける前のキャレットの位置を保存する。
+            const caretIndexBefore: number = inputElement.selectionStart;
+
+            // 選択範囲ありの場合
+            // 現在の選択範囲を削除したうえでキャレットの位置に挿入する。
+            if (inputElement.selectionStart !== inputElement.selectionEnd) {
+                inputElement.value = inputElement.value.slice(0, inputElement.selectionStart) + pasteDataAllowed + inputElement.value.slice(inputElement.selectionEnd);
+            }
+            // 選択範囲なしの場合
+            // 現在のキャレットの位置に挿入する。
+            else {
+                inputElement.value = inputElement.value.slice(0, inputElement.selectionStart) + pasteDataAllowed + inputElement.value.slice(inputElement.selectionStart);
+            }
+
+            // 貼り付けたデータの後ろにキャレットの位置を移動する。
+            //
+            // 貼り付けたデータの文字数は文字単位で数えるためにiteratorを経由させる。
+            // String.lengthはUTF-16単位で数えている。サロゲートペアはUTF-16単位では2になる。
+            //
+            // String length | MDN
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length#description
+            inputElement.selectionStart = inputElement.selectionEnd = caretIndexBefore + [...pasteDataAllowed].length;
+            textLog(`paste 終了 selectionStart[${inputElement.selectionStart}]selectionEnd[${inputElement.selectionEnd}]`, e);
+        }
+    }
+}
+
+/**
+ * HTMLElement: drop event
+ * 
+ * HTML Drag and Drop API | MDN
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API
+ * 
+ * @param e DragEvent
+ */
+function dropEventListener(e: DragEvent): void {
+    console.log("drop DragEvent", e);
+    textLog("drop Event", e);
+
+    // drop > beforeinput > inputの順でイベントが発行される。
+    // このときinputイベントのInputEvent.data(string)はnullになっている。
+    // デフォルトの動作をキャンセルするとpasteイベントのみになる。
+    e.preventDefault();
+
+    // ドロップするデータを取得する。
+    const pasteData: string | undefined = e.dataTransfer?.getData("text");
+    if (pasteData) {
+        textLog(`drop pasteData[${pasteData}]`, e);
+
+        // ドロップするデータから入力不可の文字を取り除く。
+        const pasteDataAllowed: string = Array.from(pasteData)
+            .filter((s) => allowMap.has(s))
+            .reduce((previousValue, currentValue) => previousValue + currentValue, "");
+        textLog(`drop pasteDataAllowed[${pasteDataAllowed}]`, e);
+        if (pasteDataAllowed.length === 0) {
+            return;
+        }
+
+        // テキストインプットのキャレットの位置に挿入する。
+        //
+        // selectionStart, selectionEndの型はnumber | nullとなっている。
+        // if(selectionStart)では0の場合にfalseになるのでnullと比較している。
+        //     Falsy | MDN
+        //     https://developer.mozilla.org/en-US/docs/Glossary/Falsy
+        //
+        // ドロップ時のキャレットの位置をリアルタイムに取得するのは無理そう。
+        // キャレットの位置と選択範囲はドラッグ操作開始前の状態になる。
+        //     CaretPosition (experimental) | MDN
+        //     https://developer.mozilla.org/en-US/docs/Web/API/CaretPosition
+        //     Get cursor position when a file is dropped in textarea in Chrome
+        //     https://stackoverflow.com/questions/65654468/get-cursor-position-when-a-file-is-dropped-in-textarea-in-chrome
+        const inputElement: HTMLInputElement = e.target as HTMLInputElement;
+        textLog(`drop selectionStart[${inputElement.selectionStart}]selectionEnd[${inputElement.selectionEnd}]`, e);
+        if ((inputElement.selectionStart !== null) && (inputElement.selectionEnd !== null)) {
+            // ドロップする前のキャレットの位置を保存する。
+            // これはドラッグ操作開始前の状態になっている。
+            const caretIndexBefore: number = inputElement.selectionStart;
+
+            // 選択範囲ありの場合
+            // 現在の選択範囲を削除したうえでキャレットの位置に挿入する。
+            if (inputElement.selectionStart !== inputElement.selectionEnd) {
+                inputElement.value = inputElement.value.slice(0, inputElement.selectionStart) + pasteDataAllowed + inputElement.value.slice(inputElement.selectionEnd);
+            }
+            // 選択範囲なしの場合
+            // 現在のキャレットの位置に挿入する。
+            else {
+                inputElement.value = inputElement.value.slice(0, inputElement.selectionStart) + pasteDataAllowed + inputElement.value.slice(inputElement.selectionStart);
+            }
+
+            // ドロップしたデータの後ろにキャレットの位置を移動する。
+            //
+            // ドロップしたデータの文字数は文字単位で数えるためにiteratorを経由させる。
+            // String.lengthはUTF-16単位で数えている。サロゲートペアはUTF-16単位では2になる。
+            //     String length | MDN
+            //     https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length#description
+            inputElement.selectionStart = inputElement.selectionEnd = caretIndexBefore + [...pasteDataAllowed].length;
+            textLog(`drop 終了 selectionStart[${inputElement.selectionStart}]selectionEnd[${inputElement.selectionEnd}]`, e);
         }
     }
 }
