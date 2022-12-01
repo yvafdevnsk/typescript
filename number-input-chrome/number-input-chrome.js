@@ -304,7 +304,7 @@ function dropEventListener(e) {
         if ((inputElement.selectionStart !== null) && (inputElement.selectionEnd !== null)) {
             // ドロップする前のキャレットの位置を保存する。
             // これはドラッグ操作開始前の状態になっている。
-            const caretIndexBefore = inputElement.selectionStart;
+            const caretPositionBefore = inputElement.selectionStart;
             // 選択範囲ありの場合
             // 現在の選択範囲を削除したうえでキャレットの位置に挿入する。
             if (inputElement.selectionStart !== inputElement.selectionEnd) {
@@ -321,7 +321,7 @@ function dropEventListener(e) {
             // String.lengthはUTF-16単位で数えている。サロゲートペアはUTF-16単位では2になる。
             //     String length | MDN
             //     https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length#description
-            inputElement.selectionStart = inputElement.selectionEnd = caretIndexBefore + [...pasteDataAllowed].length;
+            inputElement.selectionStart = inputElement.selectionEnd = caretPositionBefore + [...pasteDataAllowed].length;
             textLog(`drop 終了 selectionStart[${inputElement.selectionStart}]selectionEnd[${inputElement.selectionEnd}]`, e);
         }
     }
