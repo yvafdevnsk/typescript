@@ -4,7 +4,9 @@
 数字 1,2,3,4,5,6,7,8,9,0 のみ入力可能なテキストインプット
 
 ## 注意
-ChromeではIME入力の確定をcompositionendイベントで処理する。
+- ChromeではIME入力の確定をcompositionendイベントで処理する。
+- Chromeでは貼り付けをpasteイベントで処理する。
+- Chromeではドロップをdropイベントで処理する。
 
 ## ビルド
 ```
