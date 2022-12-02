@@ -188,6 +188,8 @@ function compositionEndEventListener(e) {
         }
         else {
             textLog("compositionend 入力値あり 何れかの文字 ng", e);
+            // compositionendイベントはキャンセルできないので
+            // テキストインプットの内容から入力不可の文字を取り除く。
             // IMEで入力された場合はinputイベントがe.isComposing=trueで呼ばれた後にcompositionendイベントが呼ばれる。
             // IMEで入力された場合はbeforeinputイベントの処理はe.isComposing=trueになるのでスキップされる。
             // IMEで入力された場合はinputイベントの処理はe.isComposing=trueになるのでスキップされる。
