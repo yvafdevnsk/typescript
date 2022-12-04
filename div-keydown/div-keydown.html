@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <script src="div-keydown.js"></script>
+        <link rel="stylesheet" href="div-keydown.css">
+        <title>TypeScript: div要素でkeydownイベントを受け取る</title>
+    </head>
+    <body>
+        <p>div要素でkeydownイベントを受け取る</p>
+        <div id="div-button">
+            <input id="set-focus-button" type="button" value="div要素にフォーカスを設定">
+            <p>または、マウスでクリックする。</p>
+        </div>
+        <!-- div要素をtabindex=-1とすることでJavaScriptまたはマウスクリックでフォーカスを設定できる。 -->
+        <!-- キーボードのtabキーによるフォーカス移動の対象にはならない。 -->
+        <!--     tabindex -->
+        <!--     https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex -->
+        <div id="div-keydown" tabindex="-1">
+            <p id="focus-log"></p>
+        </div>
+    </body>
+</html>

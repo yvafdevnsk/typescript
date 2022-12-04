@@ -1,0 +1,28 @@
+body, p, input {
+    font-size: 24pt;
+}
+
+div {
+    margin-top: 24px;
+}
+
+input#set-focus-button:focus {
+    outline: 5px solid green;
+}
+
+div#div-keydown {
+    width: 600px;
+    height: 400px;
+    background-color: burlywood;
+}
+
+/*
+ * div要素にkeydownイベントが発生すると輪郭線が描画される。
+ * Chromeでは黒の輪郭線が表示される。
+ *
+ * outline
+ * https://developer.mozilla.org/en-US/docs/Web/CSS/outline
+ */
+div#div-keydown:focus {
+    outline: 5px solid green;
+}
