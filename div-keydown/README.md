@@ -1,14 +1,12 @@
-# 数字入力テキストインプット (Windows10のChrome107で動作する)
+# div要素でkeydownイベントを受け取る
 
 ## 仕様
-数字 1,2,3,4,5,6,7,8,9,0 のみ入力可能なテキストインプット
+div要素にtabindex=-1を設定してkeydownイベントを受け取る。
 
 ## 注意
-- ChromeではIME入力の確定をcompositionendイベントで処理する。
-- Chromeでは貼り付けをpasteイベントで処理する。
-- Chromeではドロップをdropイベントで処理する。
+- Chromeではkeydownイベントを受け取ると輪郭線(outline)が表示される。
 
 ## ビルド
 ```
-$ npx tsc --target es2015 number-input-chrome.ts
+$ npx tsc --target es2015 div-keydown.ts
 ```
