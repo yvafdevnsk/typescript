@@ -11,3 +11,6 @@
 
 ## div-keydown
 div要素でkeydownイベントを受け取る。
+
+## last-day-of-month
+月末日を取得する。
